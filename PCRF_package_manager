@@ -1,0 +1,57 @@
+import logging
+import re
+import requests
+from bs4 import BeautifulSoup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
+# Логгирование add filemode="w" to overwrite
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    filemode="w", level=logging.DEBUG)  #filename="PCRF_packages_logs.log",
+logging.debug("This is a debug message")
+logging.info("Informational message")
+logging.error("An error has happened!")
+
+
+# Доступ к API и получение URL
+def refresh(bot, update):
+    incoming_msg = update.message.text
+    msisdn = re.findall("\d{11}", incoming_msg)[0]
+    action = re.findall('[yes|no|check]+', incoming_msg)[0]
+    if action == 'yes':
+        command = action.replace('yes', 'gprs_package_order')    # activate
+    elif action == 'no':
+        command = action.replace('no', 'gprs_package_cancel')    # deactivate
+    elif action == 'check':
+        command = action.replace('check', 'sim_package_list')    # check
+    session_url = "http://########:9900/pcrf/xmlgate?plain=1&command=" + command + "&msisdn=" + msisdn + ""
+    # url = urllib.request.urlopen(session_url)
+    request = requests.get(session_url, verify=False)
+    response = request.text
+    soup = BeautifulSoup(response, 'lxml')
+    try:
+        response = soup.find('packagename')   # trying to find tag <packagename>
+        if not response:
+            my_string = ("Пакет не подключен для данного номера!")
+        else:
+            my_string = ("Пакет " + response.get_text() + " для данного номера активен!")
+    except AttributeError:
+        response = 'unknown_response'
+
+# Отправляем
+    #chat_id = '-10013######'
+    chat_id = update.message.chat_id
+    bot.send_message(chat_id=chat_id, text=my_string)
+
+
+# Основная программа, содержащая функцию с именем main, чтобы запускать программу
+def main():
+    updater = Updater('1015097584:AA#######')
+    # Chat_id = '-1001331528759'
+    dp = updater.dispatcher
+    dp.add_handler(MessageHandler(Filters.text, refresh))
+    updater.start_polling()
+    updater.idle()
+
+
+if __name__ == '__main__':
+    main()
