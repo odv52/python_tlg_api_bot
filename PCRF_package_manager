@@ -23,7 +23,7 @@ def refresh(bot, update):
         command = action.replace('no', 'gprs_package_cancel')    # deactivate
     elif action == 'check':
         command = action.replace('check', 'sim_package_list')    # check
-    session_url = "http://########:9900/pcrf/xmlgate?plain=1&command=" + command + "&msisdn=" + msisdn + ""
+    session_url = "http://########:###/pcrf/####?plain=1&command=" + command + "&msisdn=" + msisdn + ""
     # url = urllib.request.urlopen(session_url)
     request = requests.get(session_url, verify=False)
     response = request.text
@@ -45,8 +45,8 @@ def refresh(bot, update):
 
 # Основная программа, содержащая функцию с именем main, чтобы запускать программу
 def main():
-    updater = Updater('1015097584:AA#######')
-    # Chat_id = '-1001331528759'
+    updater = Updater('Ключ_Бота')
+    # Chat_id = '-Чат_в_котором_работает_бот'
     dp = updater.dispatcher
     dp.add_handler(MessageHandler(Filters.text, refresh))
     updater.start_polling()
